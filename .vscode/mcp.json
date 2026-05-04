@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "zoho-integration": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/Users/dhanus-10276/Home/web/zoho-integration-mcp/dist/index.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "name": "zoho-payroll-people-marketplace",
+  "owner": {
+    "name": "Zoho Books Server",
+    "url": "https://www.zoho.com"
+  },
+  "plugins": [
+    {
+      "name": "zoho-payroll-people-integration",
+      "description": "Connect Zoho Payroll and Zoho People to sync employees, diagnose integration issues, fix LOP sync failures, and run integration health checks — all from your AI agent.",
+      "version": "1.0.0",
+      "source": "./"
+    }
+  ]
+}

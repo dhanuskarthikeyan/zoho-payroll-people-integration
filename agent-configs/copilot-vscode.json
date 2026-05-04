@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "zoho-integration": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/zoho-integration-mcp/dist/index.js"]
+    }
+  }
+}

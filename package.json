@@ -1,0 +1,29 @@
+{
+  "name": "zoho-payroll-people-integration",
+  "version": "1.0.0",
+  "description": "Zoho Payroll - People Integration plugin for Claude, Cursor, Copilot, Windsurf and any MCP-compatible agent",
+  "main": "dist/index.js",
+  "bin": {
+    "zoho-payroll-people-integration": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "install:agents": "node install.mjs",
+    "uninstall:agents": "node install.mjs uninstall",
+    "status": "node install.mjs status"
+  },
+  "keywords": ["mcp", "zoho", "payroll", "people", "integration"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.7.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.5.0"
+  }
+}

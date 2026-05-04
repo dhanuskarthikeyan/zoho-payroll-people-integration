@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "zoho-integration": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/zoho-integration-mcp/dist/index.js"],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

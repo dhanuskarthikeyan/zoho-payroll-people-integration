@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "name": "zoho-payroll-people-integration",
+  "displayName": "Zoho Payroll - People Integration",
+  "version": "1.0.0",
+  "description": "Connect Zoho Payroll and Zoho People to sync employees, diagnose integration issues, fix LOP sync failures, and run integration health checks — all from your AI agent.",
+  "author": {
+    "name": "Zoho Books Server",
+    "url": "https://www.zoho.com"
+  },
+  "icon": "https://www.zoho.com/payroll/images/favicon.ico",
+  "categories": ["hr", "payroll", "integration", "zoho"],
+  "mcpServers": {
+    "zoho-payroll-people": {
+      "command": "node",
+      "args": ["./dist/index.js"]
+    }
+  },
+  "skillsDirectory": "./skills",
+  "permissions": [],
+  "userConfig": []
+}
