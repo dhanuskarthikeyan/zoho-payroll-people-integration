@@ -1,0 +1,10 @@
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+export declare function handleConnect(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleDisconnect(): CallToolResult;
+export declare function handleStatus(): CallToolResult;
+export declare function handleHealthCheck(): Promise<CallToolResult>;
+export declare function handleSyncEmployee(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleSyncAll(): Promise<CallToolResult>;
+export declare function handleFixIssues(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleListEmployees(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleGetEmployee(args: Record<string, string>): Promise<CallToolResult>;

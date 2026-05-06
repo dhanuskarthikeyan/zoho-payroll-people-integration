@@ -1,0 +1,12 @@
+import { Tool } from "@modelcontextprotocol/sdk/types.js";
+export declare const CONNECT_TOOL: Tool;
+export declare const DISCONNECT_TOOL: Tool;
+export declare const STATUS_TOOL: Tool;
+export declare const HEALTH_TOOL: Tool;
+export declare const SYNC_EMPLOYEE_TOOL: Tool;
+export declare const SYNC_ALL_TOOL: Tool;
+export declare const FIX_ISSUES_TOOL: Tool;
+export declare const LIST_EMPLOYEES_TOOL: Tool;
+export declare const GET_EMPLOYEE_TOOL: Tool;
+export declare const PRE_CONNECT_TOOLS: Tool[];
+export declare const POST_CONNECT_TOOLS: Tool[];
