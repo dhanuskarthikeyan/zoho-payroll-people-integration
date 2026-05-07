@@ -73,16 +73,29 @@ export async function handleConnect(args: Record<string, string>): Promise<CallT
   };
   saveConfig(config);
 
+  // Auto-discover Payroll organization ID
+  let orgLine = "";
+  try {
+    const payroll = new ZohoPayrollClient(config);
+    const orgId   = await payroll.getPayrollOrgId();
+    const updated: ZohoConfig = { ...config, organization_id: orgId };
+    saveConfig(updated);
+    orgLine = `✓ Payroll Org ID — ${orgId} (auto-discovered)\n`;
+  } catch {
+    orgLine = "⚠️  Could not auto-discover Payroll Org ID — run check_integration_health to retry\n";
+  }
+
   return text(
     "Connected!\n\n" +
     "✓ Zoho MCP URL — saved\n" +
     "✓ Zoho Payroll — enabled\n" +
-    "✓ Zoho People  — enabled\n\n" +
-    "All integration tools are now available. Try:\n" +
-    "  • check_integration_health   — find sync gaps\n" +
-    "  • list_employees             — see both systems\n" +
-    "  • sync_all_employees         — one-shot full sync\n" +
-    "  • fix_sync_issues            — auto-fix problems"
+    "✓ Zoho People  — enabled\n" +
+    orgLine + "\n" +
+    "All integration tools are now available. Next steps:\n" +
+    "  • check_integration_health       — verify sync status\n" +
+    "  • get_people_field_mappings      — see which fields are mapped\n" +
+    "  • trigger_people_sync            — push People employees to Payroll\n" +
+    "  • list_people_sync_errors        — see any sync failures"
   );
 }
 
@@ -114,61 +127,31 @@ export function handleStatus(): CallToolResult {
 // ── check_integration_health ──────────────────────────────────────────────────
 
 export async function handleHealthCheck(): Promise<CallToolResult> {
-  const config = loadConfig()!;
+  const config  = loadConfig()!;
   const payroll = new ZohoPayrollClient(config);
-  const people  = new ZohoPeopleClient(config);
 
-  const [payrollEmployees, peopleEmployees] = await Promise.all([
-    payroll.listEmployees(),
-    people.listEmployees(),
-  ]);
-
-  const payrollMap = new Map(payrollEmployees.map((e) => [e.id, e]));
-  const peopleMap  = new Map(peopleEmployees.map((e)  => [e.id, e]));
-
-  const missingInPayroll = peopleEmployees.filter((e) => !payrollMap.has(e.id));
-  const missingInPeople  = payrollEmployees.filter((e) => !peopleMap.has(e.id));
-
-  const deptMismatches: Array<{ employee_id: string; people_dept: string; payroll_dept: string }> = [];
-  for (const pe of peopleEmployees) {
-    const pr = payrollMap.get(pe.id);
-    if (pr && pe.department && pr.department && pe.department !== pr.department) {
-      deptMismatches.push({ employee_id: pe.id, people_dept: pe.department, payroll_dept: pr.department });
-    }
-  }
+  // Payroll list is always available via MCP
+  const payrollEmployees = await payroll.listEmployees();
 
   const lines: string[] = [
     `Integration Health Report — ${new Date().toLocaleString()}`,
     `─────────────────────────────────────────`,
-    `People employees:  ${peopleEmployees.length}`,
     `Payroll employees: ${payrollEmployees.length}`,
     ``,
   ];
 
-  if (missingInPayroll.length) {
-    lines.push(`❌ Missing in Payroll (${missingInPayroll.length}):`);
-    missingInPayroll.forEach((e) => lines.push(`   • ${e.id} — ${e.name} (${e.email})`));
-    lines.push("");
-  }
-
-  if (missingInPeople.length) {
-    lines.push(`⚠️  In Payroll but not in People (${missingInPeople.length}):`);
-    missingInPeople.forEach((e) => lines.push(`   • ${e.id} — ${e.name}`));
-    lines.push("");
-  }
-
-  if (deptMismatches.length) {
-    lines.push(`⚠️  Department mismatches (${deptMismatches.length}):`);
-    deptMismatches.forEach((m) =>
-      lines.push(`   • ${m.employee_id}: People="${m.people_dept}" vs Payroll="${m.payroll_dept}"`)
-    );
-    lines.push("");
-  }
-
-  if (!missingInPayroll.length && !missingInPeople.length && !deptMismatches.length) {
-    lines.push("✅ Everything is in sync!");
+  if (payrollEmployees.length === 0) {
+    lines.push("⚠️  No employees found in Payroll yet.");
+    lines.push("   Run trigger_people_sync to push employees from Zoho People → Payroll.");
   } else {
-    lines.push(`Run fix_sync_issues with issue_type="all" to auto-fix all problems.`);
+    lines.push(`✅ ${payrollEmployees.length} employee(s) in Payroll.`);
+    payrollEmployees.slice(0, 10).forEach((e) =>
+      lines.push(`   • ${e.id} — ${e.name} (${e.email})`)
+    );
+    if (payrollEmployees.length > 10) lines.push(`   … and ${payrollEmployees.length - 10} more`);
+    lines.push("");
+    lines.push("For People → Payroll sync status, use get_people_integration_dashboard.");
+    lines.push("For sync errors, use list_people_sync_errors.");
   }
 
   return text(lines.join("\n"));
@@ -201,32 +184,22 @@ export async function handleSyncEmployee(args: Record<string, string>): Promise<
 
 export async function handleSyncAll(): Promise<CallToolResult> {
   const config = loadConfig()!;
-  const payroll = new ZohoPayrollClient(config);
-  const people  = new ZohoPeopleClient(config);
 
-  const [payrollEmployees, peopleEmployees] = await Promise.all([
-    payroll.listEmployees(),
-    people.listEmployees(),
-  ]);
+  // Use the People Integration REST API which handles the full sync on Zoho's backend
+  if (config.organization_id && config.access_token) {
+    const client = new ZohoPeopleIntegrationClient(config);
+    const data   = await client.triggerSync();
+    return json(data);
+  }
 
-  const payrollIds = new Set(payrollEmployees.map((e) => e.id));
-  const toAdd      = peopleEmployees.filter((e) => !payrollIds.has(e.id));
-  const toUpdate   = peopleEmployees.filter((e) =>  payrollIds.has(e.id));
-
-  const results = await Promise.allSettled([
-    ...toAdd.map((e)    => payroll.addEmployee(e)),
-    ...toUpdate.map((e) => payroll.updateEmployee(e.id, e)),
-  ]);
-
-  const succeeded = results.filter((r) => r.status === "fulfilled").length;
-  const failed    = results.filter((r) => r.status === "rejected").length;
-
+  // Fallback: direct MCP — create employees one by one from Payroll perspective
+  // (People has no list-all-employees MCP tool; direct sync requires REST API credentials)
   return text(
-    `Sync complete.\n` +
-    `  Added:   ${toAdd.length}\n` +
-    `  Updated: ${toUpdate.length}\n` +
-    `  ✅ Success: ${succeeded}\n` +
-    (failed ? `  ❌ Failed:  ${failed}` : "")
+    "To run a full People → Payroll sync, configure REST API credentials first:\n\n" +
+    "  configure_people_api_credentials with:\n" +
+    "    organization_id  (from Zoho Payroll → Settings → Organization)\n" +
+    "    access_token     (OAuth token with ZohoPayroll.employees.CREATE scope)\n\n" +
+    "Then run sync_all_employees again."
   );
 }
 
@@ -235,42 +208,37 @@ export async function handleSyncAll(): Promise<CallToolResult> {
 export async function handleFixIssues(args: Record<string, string>): Promise<CallToolResult> {
   const { issue_type } = args;
   const config  = loadConfig()!;
-  const payroll = new ZohoPayrollClient(config);
-  const people  = new ZohoPeopleClient(config);
 
-  const [payrollEmployees, peopleEmployees] = await Promise.all([
-    payroll.listEmployees(),
-    people.listEmployees(),
-  ]);
-
-  const payrollMap = new Map(payrollEmployees.map((e) => [e.id, e]));
   const lines: string[] = [];
 
   if (issue_type === "missing_employees" || issue_type === "all") {
-    const missing = peopleEmployees.filter((e) => !payrollMap.has(e.id));
-    lines.push(`Fixing missing employees (${missing.length})...`);
-    const results = await Promise.allSettled(missing.map((e) => payroll.addEmployee(e)));
-    lines.push(`  ✅ Added ${results.filter((r) => r.status === "fulfilled").length}/${missing.length} to Payroll.`);
+    // Trigger People → Payroll sync to import missing employees
+    if (config.organization_id && config.access_token) {
+      const client = new ZohoPeopleIntegrationClient(config);
+      lines.push("Triggering People → Payroll employee sync...");
+      try {
+        await client.triggerSync();
+        lines.push("  ✅ Sync triggered. Employees missing in Payroll will be imported.");
+        lines.push("  Run list_people_sync_errors after 1–2 min to verify.");
+      } catch (e) {
+        lines.push(`  ❌ Sync failed: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    } else {
+      lines.push("To auto-fix missing employees, run configure_people_api_credentials first.");
+    }
   }
 
   if (issue_type === "department_mismatch" || issue_type === "all") {
-    const mismatches = peopleEmployees.filter((e) => {
-      const pr = payrollMap.get(e.id);
-      return pr && e.department && pr.department && e.department !== pr.department;
-    });
-    lines.push(`\nFixing department mismatches (${mismatches.length})...`);
-    const results = await Promise.allSettled(
-      mismatches.map((e) => payroll.updateEmployee(e.id, { department: e.department }))
-    );
-    lines.push(`  ✅ Updated ${results.filter((r) => r.status === "fulfilled").length}/${mismatches.length} records.`);
+    lines.push("\nDepartment mismatches are resolved when employees re-sync from People.");
+    lines.push("  Run trigger_people_sync to push updated data from People → Payroll.");
   }
 
   if (issue_type === "salary_mismatch" || issue_type === "all") {
-    lines.push(`\nSalary mismatches require manual review — salary data is sensitive.`);
-    lines.push(`  Run check_integration_health to see affected employees.`);
+    lines.push("\nSalary mismatches require manual review — salary data is sensitive.");
+    lines.push("  Review in Zoho Payroll → Employees → [Employee] → Salary.");
   }
 
-  return text(lines.join("\n"));
+  return text(lines.join("\n") || "No fixes applied. Specify issue_type: missing_employees, department_mismatch, salary_mismatch, or all.");
 }
 
 // ── list_employees ────────────────────────────────────────────────────────────
@@ -279,14 +247,21 @@ export async function handleListEmployees(args: Record<string, string>): Promise
   const { source } = args;
   const config = loadConfig()!;
 
-  const [payrollList, peopleList] = await Promise.all([
-    (source === "payroll" || source === "both") ? new ZohoPayrollClient(config).listEmployees() : Promise.resolve<Employee[]>([]),
-    (source === "people"  || source === "both") ? new ZohoPeopleClient(config).listEmployees()  : Promise.resolve<Employee[]>([]),
-  ]);
-
   const result: Record<string, unknown> = {};
-  if (source === "people"  || source === "both") result.people_employees  = { count: peopleList.length,  employees: peopleList };
-  if (source === "payroll" || source === "both") result.payroll_employees = { count: payrollList.length, employees: payrollList };
+
+  if (source === "payroll" || source === "both") {
+    const payrollList = await new ZohoPayrollClient(config).listEmployees();
+    result.payroll_employees = { count: payrollList.length, employees: payrollList };
+  }
+
+  if (source === "people" || source === "both") {
+    // Zoho People MCP has no list-all-employees tool.
+    // Use get_people_integration_dashboard + list_people_sync_errors for People sync status.
+    result.people_employees = {
+      count: null,
+      note: "Listing all People employees is not available via MCP. Use get_people_integration_dashboard to see sync counts, or trigger_people_sync to sync them to Payroll.",
+    };
+  }
 
   return json(result);
 }

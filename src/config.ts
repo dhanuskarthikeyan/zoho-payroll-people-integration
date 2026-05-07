@@ -9,9 +9,10 @@ export interface ZohoConfig {
   zoho_mcp_url: string;          // Single Zoho MCP URL from zoho.com/mcp
   enabled_apps: string[];        // e.g. ["payroll", "people"]
   connected_at: string;
-  people_org_id?: string;        // Zoho People organization ID
-  payroll_org_id?: string;       // Zoho Payroll organization ID
-  organization_id?: string;      // [legacy] Zoho Payroll organization ID — kept for backward compat
+  people_org_id?: string;        // Zoho People organization ID (user-supplied)
+  payroll_org_id?: string;       // Zoho Payroll organization ID (user-supplied)
+  organization_id?: string;      // Zoho Payroll organization ID (auto-discovered or aliased from payroll_org_id)
+  payroll_org_name?: string;     // Human-readable Payroll org name
   access_token?: string;         // OAuth access token (for REST API)
 }
 

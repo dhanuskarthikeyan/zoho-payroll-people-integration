@@ -5,6 +5,7 @@ export interface ZohoConfig {
     people_org_id?: string;
     payroll_org_id?: string;
     organization_id?: string;
+    payroll_org_name?: string;
     access_token?: string;
 }
 export declare function loadConfig(): ZohoConfig | null;

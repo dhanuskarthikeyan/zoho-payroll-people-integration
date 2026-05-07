@@ -48,7 +48,10 @@ export declare function validateMcpUrl(url: string): Promise<{
 }>;
 export declare class ZohoPayrollClient {
     private client;
+    private orgId;
     constructor(config: ZohoConfig);
+    getPayrollOrgId(): Promise<string>;
+    private getOrgId;
     listEmployees(): Promise<Employee[]>;
     getEmployee(id: string): Promise<Employee | null>;
     getSalary(id: string): Promise<SalaryDetails | null>;
@@ -60,8 +63,8 @@ export declare class ZohoPeopleClient {
     constructor(config: ZohoConfig);
     listEmployees(): Promise<Employee[]>;
     getEmployee(id: string): Promise<Employee | null>;
-    getSalary(id: string): Promise<SalaryDetails | null>;
-    updateEmployee(id: string, updates: Partial<Employee>): Promise<SyncResult>;
+    getSalary(_id: string): Promise<SalaryDetails | null>;
+    updateEmployee(id: string, _updates: Partial<Employee>): Promise<SyncResult>;
 }
 export declare class ZohoPeopleIntegrationClient {
     private orgId;
