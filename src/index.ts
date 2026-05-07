@@ -28,6 +28,14 @@ import {
   handleGetFieldMappings,
   handleGetFieldMappingEditData,
   handleUpdateFieldMappings,
+  handleGetLeaveAttendanceDetails,
+  handleTriggerLeaveAttendanceSync,
+  handleGetLeaveSettings,
+  handleGetLeaveAttendanceSyncSummary,
+  handleListLeaveAttendanceSyncErrors,
+  handleGetAttendanceSettings,
+  handleGetEmployeeAttendance,
+  handleListRegularizations,
 } from "./tools/handlers.js";
 
 const server = new Server(
@@ -82,8 +90,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (name === "get_people_integration_preferences") return await handleGetPreferences();
     if (name === "update_people_integration_preferences") return await handleUpdatePreferences(args as Record<string, unknown>);
     if (name === "get_people_field_mappings")              return await handleGetFieldMappings(a);
-    if (name === "get_people_field_mapping_edit_data")     return await handleGetFieldMappingEditData(a);
-    if (name === "update_people_employee_field_mappings")  return await handleUpdateFieldMappings(args as Record<string, unknown>);
+    if (name === "get_people_field_mapping_edit_data")       return await handleGetFieldMappingEditData(a);
+    if (name === "update_people_employee_field_mappings")    return await handleUpdateFieldMappings(args as Record<string, unknown>);
+    if (name === "get_leave_attendance_details")             return await handleGetLeaveAttendanceDetails();
+    if (name === "trigger_leave_attendance_sync")            return await handleTriggerLeaveAttendanceSync();
+    if (name === "get_leave_attendance_settings")            return await handleGetLeaveSettings();
+    if (name === "get_leave_attendance_sync_summary")        return await handleGetLeaveAttendanceSyncSummary();
+    if (name === "list_leave_attendance_sync_errors")        return await handleListLeaveAttendanceSyncErrors();
+    if (name === "get_attendance_settings")                  return await handleGetAttendanceSettings();
+    if (name === "get_employee_attendance")                  return await handleGetEmployeeAttendance(a);
+    if (name === "list_attendance_regularizations")          return await handleListRegularizations(args as Record<string, unknown>);
 
     return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
   } catch (err: unknown) {

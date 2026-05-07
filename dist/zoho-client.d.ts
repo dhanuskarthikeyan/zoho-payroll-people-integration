@@ -84,3 +84,19 @@ export interface FieldMappingEntry {
     payroll_display_name: string;
     people_field_name: string;
 }
+export declare class ZohoLeaveAttendanceClient {
+    private orgId;
+    private token;
+    constructor(config: ZohoConfig);
+    private get headers();
+    private params;
+    getIntegrationDetails(): Promise<unknown>;
+    triggerSync(syncType?: string): Promise<unknown>;
+    getLeaveSettings(): Promise<unknown>;
+    getSyncSummary(): Promise<unknown>;
+    getSyncErrors(): Promise<unknown>;
+    getAttendanceSettings(): Promise<unknown>;
+    getAttendanceCycles(year: number): Promise<unknown>;
+    getEmployeeAttendance(employeeId: string, period: string): Promise<unknown>;
+    listRegularizations(opts?: Record<string, string | number>): Promise<unknown>;
+}

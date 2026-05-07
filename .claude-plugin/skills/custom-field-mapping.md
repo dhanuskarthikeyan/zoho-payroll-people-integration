@@ -49,6 +49,28 @@ PAYMENT INFORMATION (0 of 6 mapped)
 
 Tell the user: "X fields are unmapped. Here's what I recommend fixing:"
 
+## What syncs automatically (no mapping needed)
+These 12 fields sync from Zoho People → Zoho Payroll without any configuration:
+
+| Payroll field | People field |
+|---|---|
+| Employee ID | Employee Number |
+| Name | Full Name |
+| Date of Birth | Date of Birth |
+| Date of Joining | Date of Joining |
+| Date of Exit | Last Working Day |
+| Department | Department |
+| Designation | Designation |
+| Employment Type | Employee Type |
+| Employee Status | Status |
+| Email ID | Work Email |
+| Location | Work Location |
+| Gender | Gender |
+
+> This is a **one-way sync** (People → Payroll only). Changes made in Payroll are NOT written back to People.
+
+If you want to also sync Personal Info (address, PAN, father name) or Payment Info (bank details), those need manual mapping — see below.
+
 ## How to fix unmapped fields
 
 ### Option A — Map via API (fastest, no UI needed)

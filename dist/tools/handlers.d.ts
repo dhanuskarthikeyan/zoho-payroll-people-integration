@@ -18,3 +18,11 @@ export declare function handleUpdatePreferences(args: Record<string, unknown>): 
 export declare function handleGetFieldMappings(args: Record<string, string>): Promise<CallToolResult>;
 export declare function handleGetFieldMappingEditData(args: Record<string, string>): Promise<CallToolResult>;
 export declare function handleUpdateFieldMappings(args: Record<string, unknown>): Promise<CallToolResult>;
+export declare function handleGetLeaveAttendanceDetails(): Promise<CallToolResult>;
+export declare function handleTriggerLeaveAttendanceSync(): Promise<CallToolResult>;
+export declare function handleGetLeaveSettings(): Promise<CallToolResult>;
+export declare function handleGetLeaveAttendanceSyncSummary(): Promise<CallToolResult>;
+export declare function handleListLeaveAttendanceSyncErrors(): Promise<CallToolResult>;
+export declare function handleGetAttendanceSettings(): Promise<CallToolResult>;
+export declare function handleGetEmployeeAttendance(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleListRegularizations(args: Record<string, unknown>): Promise<CallToolResult>;

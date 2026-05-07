@@ -282,6 +282,97 @@ export interface FieldMappingEntry {
   people_field_name: string;
 }
 
+// ── Leave & Attendance REST client ────────────────────────────────────────────
+
+export class ZohoLeaveAttendanceClient {
+  private orgId: string;
+  private token: string;
+
+  constructor(config: ZohoConfig) {
+    if (!config.organization_id || !config.access_token) {
+      throw new Error(
+        "REST API credentials not configured. Run configure_people_api_credentials first."
+      );
+    }
+    this.orgId  = config.organization_id;
+    this.token  = config.access_token;
+  }
+
+  private get headers() {
+    return {
+      Authorization: `Zoho-oauthtoken ${this.token}`,
+      "Content-Type": "application/json",
+    };
+  }
+
+  private params(extra: Record<string, string | number> = {}) {
+    return { organization_id: this.orgId, ...extra };
+  }
+
+  async getIntegrationDetails(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async triggerSync(syncType = "MANUAL_SYNC"): Promise<unknown> {
+    const res = await axios.post(`${PAYROLL_BASE}/leaveandattendance/sync`, {},
+      { headers: this.headers, params: this.params({ sync_type: syncType }), timeout: 30000 }
+    );
+    return res.data;
+  }
+
+  async getLeaveSettings(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/leave/settings`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getSyncSummary(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/sync/summary`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getSyncErrors(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/sync/errors`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getAttendanceSettings(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/hrms/attendance/settings`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getAttendanceCycles(year: number): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/hrms/attendance/cycles`, {
+      headers: this.headers, params: this.params({ year }), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getEmployeeAttendance(employeeId: string, period: string): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/employees/${employeeId}/attendance`, {
+      headers: this.headers, params: this.params({ period }), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async listRegularizations(opts: Record<string, string | number> = {}): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/attendance/regularization`, {
+      headers: this.headers, params: this.params(opts as Record<string, string>), timeout: 15000,
+    });
+    return res.data;
+  }
+}
+
 // ── Safe parsers ──────────────────────────────────────────────────────────────
 
 function safeJson(raw: unknown): Record<string, unknown> {

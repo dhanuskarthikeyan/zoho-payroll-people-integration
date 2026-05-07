@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.POST_CONNECT_TOOLS = exports.PRE_CONNECT_TOOLS = exports.UPDATE_FIELD_MAPPINGS_TOOL = exports.GET_FIELD_MAPPING_EDIT_DATA_TOOL = exports.GET_FIELD_MAPPINGS_TOOL = exports.UPDATE_PREFERENCES_TOOL = exports.GET_PREFERENCES_TOOL = exports.LIST_SYNC_ERRORS_TOOL = exports.GET_SYNC_HISTORY_TOOL = exports.TRIGGER_SYNC_TOOL = exports.GET_DASHBOARD_TOOL = exports.CONFIGURE_API_CREDENTIALS_TOOL = exports.GET_EMPLOYEE_TOOL = exports.LIST_EMPLOYEES_TOOL = exports.FIX_ISSUES_TOOL = exports.SYNC_ALL_TOOL = exports.SYNC_EMPLOYEE_TOOL = exports.HEALTH_TOOL = exports.STATUS_TOOL = exports.DISCONNECT_TOOL = exports.CONNECT_TOOL = void 0;
+exports.POST_CONNECT_TOOLS = exports.PRE_CONNECT_TOOLS = exports.LIST_REGULARIZATIONS_TOOL = exports.GET_EMPLOYEE_ATTENDANCE_TOOL = exports.GET_ATTENDANCE_SETTINGS_TOOL = exports.LIST_LEAVE_SYNC_ERRORS_TOOL = exports.GET_LEAVE_SYNC_SUMMARY_TOOL = exports.GET_LEAVE_SETTINGS_TOOL = exports.TRIGGER_LEAVE_ATTENDANCE_SYNC_TOOL = exports.GET_LEAVE_ATTENDANCE_DETAILS_TOOL = exports.UPDATE_FIELD_MAPPINGS_TOOL = exports.GET_FIELD_MAPPING_EDIT_DATA_TOOL = exports.GET_FIELD_MAPPINGS_TOOL = exports.UPDATE_PREFERENCES_TOOL = exports.GET_PREFERENCES_TOOL = exports.LIST_SYNC_ERRORS_TOOL = exports.GET_SYNC_HISTORY_TOOL = exports.TRIGGER_SYNC_TOOL = exports.GET_DASHBOARD_TOOL = exports.CONFIGURE_API_CREDENTIALS_TOOL = exports.GET_EMPLOYEE_TOOL = exports.LIST_EMPLOYEES_TOOL = exports.FIX_ISSUES_TOOL = exports.SYNC_ALL_TOOL = exports.SYNC_EMPLOYEE_TOOL = exports.HEALTH_TOOL = exports.STATUS_TOOL = exports.DISCONNECT_TOOL = exports.CONNECT_TOOL = void 0;
 exports.CONNECT_TOOL = {
     name: "connect_zoho",
     description: "Connect to Zoho via the single Zoho MCP URL. " +
@@ -236,6 +236,63 @@ exports.UPDATE_FIELD_MAPPINGS_TOOL = {
         },
     },
 };
+// ── Leave & Attendance tools ──────────────────────────────────────────────────
+exports.GET_LEAVE_ATTENDANCE_DETAILS_TOOL = {
+    name: "get_leave_attendance_details",
+    description: "Get the current Leave & Attendance integration status, source configuration, and sync state for Zoho Payroll.",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.TRIGGER_LEAVE_ATTENDANCE_SYNC_TOOL = {
+    name: "trigger_leave_attendance_sync",
+    description: "Trigger a manual Leave & Attendance sync to pull LOP (Loss of Pay) and attendance data into Zoho Payroll.",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.GET_LEAVE_SETTINGS_TOOL = {
+    name: "get_leave_attendance_settings",
+    description: "Get the LOP/payable-day sync settings: which pay schedule is configured, whether LOP sync and payable-days sync are enabled.",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.GET_LEAVE_SYNC_SUMMARY_TOOL = {
+    name: "get_leave_attendance_sync_summary",
+    description: "Get a summary of the latest Leave & Attendance sync: status, last sync time, and error count.",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.LIST_LEAVE_SYNC_ERRORS_TOOL = {
+    name: "list_leave_attendance_sync_errors",
+    description: "List all Leave & Attendance sync errors with employee names, error messages, and error codes.",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.GET_ATTENDANCE_SETTINGS_TOOL = {
+    name: "get_attendance_settings",
+    description: "Get attendance module settings for Zoho Payroll (shift timings, overtime rules, attendance source).",
+    inputSchema: { type: "object", properties: {} },
+};
+exports.GET_EMPLOYEE_ATTENDANCE_TOOL = {
+    name: "get_employee_attendance",
+    description: "Get the attendance calendar and summary for a specific employee for a given pay period.",
+    inputSchema: {
+        type: "object",
+        required: ["employee_id", "period"],
+        properties: {
+            employee_id: { type: "string", description: "Employee ID from Zoho Payroll." },
+            period: { type: "string", description: "Pay period in YYYY-MM format (e.g. 2024-04)." },
+        },
+    },
+};
+exports.LIST_REGULARIZATIONS_TOOL = {
+    name: "list_attendance_regularizations",
+    description: "List attendance regularization requests. Filter by employee, date range, or status (pending/approved/rejected).",
+    inputSchema: {
+        type: "object",
+        properties: {
+            employee_id: { type: "string", description: "Filter by employee ID (optional)." },
+            from_date: { type: "string", description: "Start date YYYY-MM-DD (optional)." },
+            to_date: { type: "string", description: "End date YYYY-MM-DD (optional)." },
+            status: { type: "string", enum: ["pending", "approved", "rejected", "cancelled"], description: "Filter by status (optional)." },
+            page: { type: "number", description: "Page number (optional, default 1)." },
+        },
+    },
+};
 // Tools shown BEFORE connection
 exports.PRE_CONNECT_TOOLS = [exports.CONNECT_TOOL];
 // Full tool suite shown AFTER connection
@@ -259,4 +316,13 @@ exports.POST_CONNECT_TOOLS = [
     exports.GET_FIELD_MAPPINGS_TOOL,
     exports.GET_FIELD_MAPPING_EDIT_DATA_TOOL,
     exports.UPDATE_FIELD_MAPPINGS_TOOL,
+    // Leave & Attendance tools
+    exports.GET_LEAVE_ATTENDANCE_DETAILS_TOOL,
+    exports.TRIGGER_LEAVE_ATTENDANCE_SYNC_TOOL,
+    exports.GET_LEAVE_SETTINGS_TOOL,
+    exports.GET_LEAVE_SYNC_SUMMARY_TOOL,
+    exports.LIST_LEAVE_SYNC_ERRORS_TOOL,
+    exports.GET_ATTENDANCE_SETTINGS_TOOL,
+    exports.GET_EMPLOYEE_ATTENDANCE_TOOL,
+    exports.LIST_REGULARIZATIONS_TOOL,
 ];
