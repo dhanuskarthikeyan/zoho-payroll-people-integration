@@ -5,7 +5,24 @@ description: Guide to creating and mapping custom fields between Zoho People and
 
 Help the user create and map custom fields so that data flows correctly from Zoho People into Zoho Payroll.
 
-## When is this needed?
+## Step 0 — Pull live mapping state first
+Before giving any instructions, call `get_people_field_mappings` with `entity: "employee"`, then call it again with `entity: "work_location"`.
+
+Show the user a clear table of what is currently mapped vs unmapped:
+```
+EMPLOYEE FIELDS
+✅ first_name         → FirstName           (syncing)
+✅ department         → Department          (syncing)
+❌ bank_account_no    → NOT MAPPED          ← needs action
+
+WORK LOCATION FIELDS
+✅ work_location_name → WorkLocationName    (syncing)
+❌ work_location_code → NOT MAPPED          ← needs action
+```
+
+Only guide the user through the fix steps below for fields that are **actually unmapped**. If everything is already mapped, say: "All fields are currently mapped — no action needed."
+
+## When manual mapping is needed
 When a field exists in Zoho Payroll (e.g., a statutory field, bank detail, or HR field) but has no matching field in Zoho People — you must first create the field in People, then map it.
 
 ## Standard fields that sync automatically (no mapping needed)
@@ -40,8 +57,9 @@ When a field exists in Zoho Payroll (e.g., a statutory field, bank detail, or HR
 
 ### Step 4 — Populate the field for existing employees
 - For existing employees, fill in the new custom field value in Zoho People
-- Then trigger a sync: **People → HR → Employees → [Employee] → Payroll tab → Sync Now**
-- Or run `sync_all_employees` to push all employees at once
+- Then call `trigger_people_sync` to push all employees immediately
+- After a minute, call `list_people_sync_errors` to confirm the field is no longer causing errors
+- Or run `sync_employee` with a specific employee ID to test a single record first
 
 ## Important notes
 - **Payment Info is all-or-nothing:** if you map any payment field, ALL 6 payment fields must be mapped and filled
