@@ -14,6 +14,8 @@ import { fileURLToPath } from "url";
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_DIR = __dirname;
 const ENTRY      = path.join(PLUGIN_DIR, "dist", "index.js");
+const SKILLS_SRC = path.join(PLUGIN_DIR, ".claude-plugin", "skills");
+const PLUGIN_ID  = "zoho-integration";
 const HOME       = os.homedir();
 const PLATFORM   = process.platform; // darwin | linux | win32
 
@@ -157,6 +159,62 @@ function writeJson(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n", "utf-8");
 }
 
+// ── Skill targets ─────────────────────────────────────────────────────────────
+// Each skill target is a directory where Markdown skill files should be copied.
+// Agents pick these up automatically and surface them to the model.
+const skillTargets = [
+  { name: "Claude Code CLI",  dir: p(".claude", "skills", PLUGIN_ID),  detect: p(".claude") },
+  { name: "Claude Desktop",   dir: appData("Claude", "skills", PLUGIN_ID), detect: appData("Claude") },
+  { name: "Cursor",           dir: p(".cursor", "skills", PLUGIN_ID),  detect: p(".cursor") },
+  { name: "Windsurf",         dir: p(".codeium", "windsurf", "skills", PLUGIN_ID), detect: p(".codeium", "windsurf") },
+];
+
+function copySkillsTo(targetDir) {
+  if (!fs.existsSync(SKILLS_SRC)) return 0;
+  fs.mkdirSync(targetDir, { recursive: true });
+  let count = 0;
+  for (const file of fs.readdirSync(SKILLS_SRC)) {
+    if (!file.endsWith(".md")) continue;
+    fs.copyFileSync(path.join(SKILLS_SRC, file), path.join(targetDir, file));
+    count++;
+  }
+  return count;
+}
+
+function installSkills() {
+  if (!fs.existsSync(SKILLS_SRC)) {
+    console.log(c.dim("\n  (no skills directory found, skipping skill install)\n"));
+    return;
+  }
+  console.log(c.bold("\n📚 Installing skills:"));
+  for (const t of skillTargets) {
+    if (!fs.existsSync(t.detect)) {
+      console.log(`  ${c.dim("○")} ${t.name} — ${c.dim("not installed, skipping skills")}`);
+      continue;
+    }
+    try {
+      const n = copySkillsTo(t.dir);
+      console.log(`  ${c.green("✓")} ${t.name} — ${n} skill${n === 1 ? "" : "s"}`);
+      console.log(c.dim(`    → ${t.dir}`));
+    } catch (err) {
+      console.log(`  ${c.red("✗")} ${t.name} — ${err.message}`);
+    }
+  }
+}
+
+function uninstallSkills() {
+  for (const t of skillTargets) {
+    if (fs.existsSync(t.dir)) {
+      try {
+        fs.rmSync(t.dir, { recursive: true, force: true });
+        console.log(`  ${c.green("✓")} ${t.name} skills removed`);
+      } catch (err) {
+        console.log(`  ${c.red("✗")} ${t.name} skills — ${err.message}`);
+      }
+    }
+  }
+}
+
 // ── Build check ───────────────────────────────────────────────────────────────
 function ensureBuilt() {
   if (!fs.existsSync(ENTRY)) {
@@ -194,17 +252,19 @@ function install() {
     }
   }
 
+  // Install skills alongside the MCP server config
+  installSkills();
+
   // Summary
   console.log(c.bold("\n─────────────────────────────────────────"));
   console.log(`${c.green("Installed:")} ${results.installed.length}  ${c.dim("Skipped:")} ${results.skipped.length}  ${c.red("Failed:")} ${results.failed.length}`);
 
   if (results.installed.length > 0) {
     console.log(c.bold("\n✅ Next steps:"));
-    console.log("  1. Restart each installed agent (they load config at startup)");
-    console.log("  2. In any agent, tell it:");
-    console.log(c.cyan('     "Connect my Zoho accounts"'));
-    console.log("  3. Go to https://www.zoho.com/mcp — generate MCP URLs for");
-    console.log("     Zoho Payroll and Zoho People, then paste them in.");
+    console.log("  1. Restart each installed agent (they load config + skills at startup)");
+    console.log("  2. The agent will load the zoho-integration-overview skill automatically");
+    console.log("     and ask you for: Zoho MCP URL, People org ID, Payroll org ID");
+    console.log("  3. Get your MCP URL at https://www.zoho.com/mcp");
     console.log("  4. Full integration tools unlock automatically.\n");
   }
 }
@@ -239,6 +299,10 @@ function uninstall() {
       console.log(`  ${c.red("✗")} ${agent.name} — ${err.message}`);
     }
   }
+
+  // Remove installed skills
+  console.log(c.bold("\n📚 Removing skills:"));
+  uninstallSkills();
 
   // Remove saved Zoho credentials
   const credFile = path.join(HOME, ".zoho-integration-mcp", "config.json");

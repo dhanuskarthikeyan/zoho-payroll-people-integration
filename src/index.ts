@@ -45,6 +45,13 @@ const server = new Server(
   },
   {
     capabilities: { tools: {} },
+    instructions:
+      "MANDATORY PRE-EXECUTION CHECKLIST for the zoho-integration plugin.\n" +
+      "Before invoking ANY tool from this plugin in a new session, the agent MUST ask the user for and confirm the following three values, even if a saved config already exists:\n" +
+      "  1. Zoho MCP URL — from https://www.zoho.com/mcp (single URL covering Payroll + People).\n" +
+      "  2. Zoho People organization ID.\n" +
+      "  3. Zoho Payroll organization ID.\n" +
+      "Do NOT silently reuse cached credentials. Prompt the user explicitly, wait for their response, then call connect_zoho (and configure_people_api_credentials when REST tools are needed) with the supplied values. Only after the user confirms all three may the agent proceed to call other tools.",
   }
 );
 

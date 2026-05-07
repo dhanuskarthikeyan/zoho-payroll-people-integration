@@ -3,18 +3,26 @@ import { Tool } from "@modelcontextprotocol/sdk/types.js";
 export const CONNECT_TOOL: Tool = {
   name: "connect_zoho",
   description:
-    "Connect to Zoho via the single Zoho MCP URL. " +
-    "Steps: go to https://www.zoho.com/mcp → sign in → copy your MCP URL → " +
-    "enable Zoho Payroll and Zoho People in the Apps/Tools section → paste the URL here. " +
+    "Connect to Zoho. REQUIRED inputs: (1) Zoho MCP URL, (2) Zoho People organization ID, (3) Zoho Payroll organization ID. " +
+    "The agent MUST ask the user for all three values before calling this tool — do not reuse cached values silently. " +
+    "Get the MCP URL from https://www.zoho.com/mcp (sign in → enable Zoho Payroll and Zoho People → copy URL). " +
     "This must be done before any other tool is available.",
   inputSchema: {
     type: "object",
-    required: ["zoho_mcp_url"],
+    required: ["zoho_mcp_url", "people_org_id", "payroll_org_id"],
     properties: {
       zoho_mcp_url: {
         type: "string",
         description:
-          "Your Zoho MCP URL from https://www.zoho.com/mcp (single URL covering all enabled apps)",
+          "Your Zoho MCP URL from https://www.zoho.com/mcp (single URL covering all enabled apps).",
+      },
+      people_org_id: {
+        type: "string",
+        description: "Your Zoho People organization ID. Ask the user — do not guess or reuse silently.",
+      },
+      payroll_org_id: {
+        type: "string",
+        description: "Your Zoho Payroll organization ID. Ask the user — do not guess or reuse silently.",
       },
     },
   },
