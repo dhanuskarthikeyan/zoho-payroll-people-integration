@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ZohoPeopleIntegrationClient = exports.ZohoPeopleClient = exports.ZohoPayrollClient = void 0;
+exports.ZohoLeaveAttendanceClient = exports.ZohoPeopleIntegrationClient = exports.ZohoPeopleClient = exports.ZohoPayrollClient = void 0;
 exports.validateMcpUrl = validateMcpUrl;
 const axios_1 = __importDefault(require("axios"));
 // ── Single Zoho MCP client — one URL, all apps ────────────────────────────────
@@ -174,8 +174,94 @@ class ZohoPeopleIntegrationClient {
         });
         return res.data;
     }
+    async getFieldMappingEditData(entity = "employee") {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/people/field`, {
+            headers: this.headers,
+            params: this.params({ entity }),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async updateEmployeeFieldMappings(fields) {
+        const res = await axios_1.default.put(`${PAYROLL_BASE}/integrations/people/employee/fields`, { fields }, { headers: this.headers, params: this.params(), timeout: 15000 });
+        return res.data;
+    }
 }
 exports.ZohoPeopleIntegrationClient = ZohoPeopleIntegrationClient;
+// ── Leave & Attendance REST client ────────────────────────────────────────────
+class ZohoLeaveAttendanceClient {
+    orgId;
+    token;
+    constructor(config) {
+        if (!config.organization_id || !config.access_token) {
+            throw new Error("REST API credentials not configured. Run configure_people_api_credentials first.");
+        }
+        this.orgId = config.organization_id;
+        this.token = config.access_token;
+    }
+    get headers() {
+        return {
+            Authorization: `Zoho-oauthtoken ${this.token}`,
+            "Content-Type": "application/json",
+        };
+    }
+    params(extra = {}) {
+        return { organization_id: this.orgId, ...extra };
+    }
+    async getIntegrationDetails() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/leaveandattendance`, {
+            headers: this.headers, params: this.params(), timeout: 15000,
+        });
+        return res.data;
+    }
+    async triggerSync(syncType = "MANUAL_SYNC") {
+        const res = await axios_1.default.post(`${PAYROLL_BASE}/leaveandattendance/sync`, {}, { headers: this.headers, params: this.params({ sync_type: syncType }), timeout: 30000 });
+        return res.data;
+    }
+    async getLeaveSettings() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/leaveandattendance/leave/settings`, {
+            headers: this.headers, params: this.params(), timeout: 15000,
+        });
+        return res.data;
+    }
+    async getSyncSummary() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/leaveandattendance/sync/summary`, {
+            headers: this.headers, params: this.params(), timeout: 15000,
+        });
+        return res.data;
+    }
+    async getSyncErrors() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/leaveandattendance/sync/errors`, {
+            headers: this.headers, params: this.params(), timeout: 15000,
+        });
+        return res.data;
+    }
+    async getAttendanceSettings() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/hrms/attendance/settings`, {
+            headers: this.headers, params: this.params(), timeout: 15000,
+        });
+        return res.data;
+    }
+    async getAttendanceCycles(year) {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/hrms/attendance/cycles`, {
+            headers: this.headers, params: this.params({ year }), timeout: 15000,
+        });
+        return res.data;
+    }
+    async getEmployeeAttendance(employeeId, period) {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/employees/${employeeId}/attendance`, {
+            headers: this.headers, params: this.params({ period }), timeout: 15000,
+        });
+        return res.data;
+    }
+    async listRegularizations(opts = {}) {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/attendance/regularization`, {
+            headers: this.headers, params: this.params(opts), timeout: 15000,
+        });
+        return res.data;
+    }
+}
+exports.ZohoLeaveAttendanceClient = ZohoLeaveAttendanceClient;
 // ── Safe parsers ──────────────────────────────────────────────────────────────
 function safeJson(raw) {
     if (typeof raw === "string") {

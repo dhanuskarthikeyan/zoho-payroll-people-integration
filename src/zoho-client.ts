@@ -2,13 +2,39 @@ import axios, { AxiosInstance } from "axios";
 import { ZohoConfig } from "./config.js";
 
 export interface Employee {
+  // Basic Info
   id: string;
   name: string;
-  email: string;
-  department?: string;
-  designation?: string;
+  email: string;                    // Work Email
+  employee_number?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  gender?: string;
   date_of_joining?: string;
-  employment_status?: string;
+  designation?: string;
+  mobile_number?: string;
+  department?: string;
+  work_location?: string;
+  last_working_day?: string;        // Date of Exit
+  employment_status?: string;       // Status
+  // Personal Info
+  personal_email?: string;
+  date_of_birth?: string;
+  father_name?: string;
+  pan_number?: string;
+  personal_address_line1?: string;
+  personal_address_line2?: string;
+  personal_city?: string;
+  personal_state_code?: string;
+  personal_postal_code?: string;
+  // Payment Info (all-or-nothing)
+  payment_mode?: string;            // Cheque | Direct Deposit | Bank Transfer
+  bank_holder_name?: string;
+  bank_name?: string;
+  account_number?: string;
+  ifsc_code?: string;
+  account_type?: string;            // Savings | Current
 }
 
 export interface SalaryDetails {
@@ -227,6 +253,121 @@ export class ZohoPeopleIntegrationClient {
       headers: this.headers,
       params:  this.params({ entity }),
       timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getFieldMappingEditData(entity: string = "employee"): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/people/field`, {
+      headers: this.headers,
+      params:  this.params({ entity }),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async updateEmployeeFieldMappings(fields: FieldMappingEntry[]): Promise<unknown> {
+    const res = await axios.put(
+      `${PAYROLL_BASE}/integrations/people/employee/fields`,
+      { fields },
+      { headers: this.headers, params: this.params(), timeout: 15000 }
+    );
+    return res.data;
+  }
+}
+
+export interface FieldMappingEntry {
+  payroll_field_name: string;
+  payroll_display_name: string;
+  people_field_name: string;
+}
+
+// ── Leave & Attendance REST client ────────────────────────────────────────────
+
+export class ZohoLeaveAttendanceClient {
+  private orgId: string;
+  private token: string;
+
+  constructor(config: ZohoConfig) {
+    if (!config.organization_id || !config.access_token) {
+      throw new Error(
+        "REST API credentials not configured. Run configure_people_api_credentials first."
+      );
+    }
+    this.orgId  = config.organization_id;
+    this.token  = config.access_token;
+  }
+
+  private get headers() {
+    return {
+      Authorization: `Zoho-oauthtoken ${this.token}`,
+      "Content-Type": "application/json",
+    };
+  }
+
+  private params(extra: Record<string, string | number> = {}) {
+    return { organization_id: this.orgId, ...extra };
+  }
+
+  async getIntegrationDetails(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async triggerSync(syncType = "MANUAL_SYNC"): Promise<unknown> {
+    const res = await axios.post(`${PAYROLL_BASE}/leaveandattendance/sync`, {},
+      { headers: this.headers, params: this.params({ sync_type: syncType }), timeout: 30000 }
+    );
+    return res.data;
+  }
+
+  async getLeaveSettings(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/leave/settings`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getSyncSummary(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/sync/summary`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getSyncErrors(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/leaveandattendance/sync/errors`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getAttendanceSettings(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/hrms/attendance/settings`, {
+      headers: this.headers, params: this.params(), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getAttendanceCycles(year: number): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/hrms/attendance/cycles`, {
+      headers: this.headers, params: this.params({ year }), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getEmployeeAttendance(employeeId: string, period: string): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/employees/${employeeId}/attendance`, {
+      headers: this.headers, params: this.params({ period }), timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async listRegularizations(opts: Record<string, string | number> = {}): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/attendance/regularization`, {
+      headers: this.headers, params: this.params(opts as Record<string, string>), timeout: 15000,
     });
     return res.data;
   }

@@ -1,6 +1,6 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { loadConfig, saveConfig, clearConfig, ZohoConfig } from "../config.js";
-import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee, ZohoPeopleIntegrationClient } from "../zoho-client.js";
+import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee, ZohoPeopleIntegrationClient, ZohoLeaveAttendanceClient, FieldMappingEntry } from "../zoho-client.js";
 
 function text(content: string): CallToolResult {
   return { content: [{ type: "text", text: content }] };
@@ -393,6 +393,71 @@ export async function handleGetFieldMappings(args: Record<string, string>): Prom
   const entity = args.entity ?? "employee";
   const data = await client.getFieldMappings(entity);
   return json(data);
+}
+
+// ── get_people_field_mapping_edit_data ────────────────────────────────────────
+
+export async function handleGetFieldMappingEditData(args: Record<string, string>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const entity = args.entity ?? "employee";
+  const data = await client.getFieldMappingEditData(entity);
+  return json(data);
+}
+
+// ── update_people_employee_field_mappings ─────────────────────────────────────
+
+export async function handleUpdateFieldMappings(args: Record<string, unknown>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const fields = args.fields as FieldMappingEntry[];
+  if (!Array.isArray(fields) || fields.length === 0) {
+    return text("fields array is required and must not be empty.");
+  }
+  const data = await client.updateEmployeeFieldMappings(fields);
+  return json(data);
+}
+
+// ── Leave & Attendance handlers ───────────────────────────────────────────────
+
+export async function handleGetLeaveAttendanceDetails(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getIntegrationDetails());
+}
+
+export async function handleTriggerLeaveAttendanceSync(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).triggerSync());
+}
+
+export async function handleGetLeaveSettings(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getLeaveSettings());
+}
+
+export async function handleGetLeaveAttendanceSyncSummary(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getSyncSummary());
+}
+
+export async function handleListLeaveAttendanceSyncErrors(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getSyncErrors());
+}
+
+export async function handleGetAttendanceSettings(): Promise<CallToolResult> {
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getAttendanceSettings());
+}
+
+export async function handleGetEmployeeAttendance(args: Record<string, string>): Promise<CallToolResult> {
+  const { employee_id, period } = args;
+  if (!employee_id || !period) return text("employee_id and period are required.");
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).getEmployeeAttendance(employee_id, period));
+}
+
+export async function handleListRegularizations(args: Record<string, unknown>): Promise<CallToolResult> {
+  const opts: Record<string, string | number> = {};
+  if (args.employee_id) opts.employee_id = String(args.employee_id);
+  if (args.from_date)   opts.from_date   = String(args.from_date);
+  if (args.to_date)     opts.to_date     = String(args.to_date);
+  if (args.status)      opts.status      = String(args.status);
+  if (args.page)        opts.page        = Number(args.page);
+  return json(await new ZohoLeaveAttendanceClient(loadConfig()!).listRegularizations(opts));
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────

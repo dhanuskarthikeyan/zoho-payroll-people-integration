@@ -66,6 +66,26 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
             return await (0, handlers_js_1.handleUpdatePreferences)(args);
         if (name === "get_people_field_mappings")
             return await (0, handlers_js_1.handleGetFieldMappings)(a);
+        if (name === "get_people_field_mapping_edit_data")
+            return await (0, handlers_js_1.handleGetFieldMappingEditData)(a);
+        if (name === "update_people_employee_field_mappings")
+            return await (0, handlers_js_1.handleUpdateFieldMappings)(args);
+        if (name === "get_leave_attendance_details")
+            return await (0, handlers_js_1.handleGetLeaveAttendanceDetails)();
+        if (name === "trigger_leave_attendance_sync")
+            return await (0, handlers_js_1.handleTriggerLeaveAttendanceSync)();
+        if (name === "get_leave_attendance_settings")
+            return await (0, handlers_js_1.handleGetLeaveSettings)();
+        if (name === "get_leave_attendance_sync_summary")
+            return await (0, handlers_js_1.handleGetLeaveAttendanceSyncSummary)();
+        if (name === "list_leave_attendance_sync_errors")
+            return await (0, handlers_js_1.handleListLeaveAttendanceSyncErrors)();
+        if (name === "get_attendance_settings")
+            return await (0, handlers_js_1.handleGetAttendanceSettings)();
+        if (name === "get_employee_attendance")
+            return await (0, handlers_js_1.handleGetEmployeeAttendance)(a);
+        if (name === "list_attendance_regularizations")
+            return await (0, handlers_js_1.handleListRegularizations)(args);
         return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
     }
     catch (err) {

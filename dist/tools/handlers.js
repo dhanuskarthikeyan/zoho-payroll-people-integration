@@ -17,6 +17,16 @@ exports.handleListSyncErrors = handleListSyncErrors;
 exports.handleGetPreferences = handleGetPreferences;
 exports.handleUpdatePreferences = handleUpdatePreferences;
 exports.handleGetFieldMappings = handleGetFieldMappings;
+exports.handleGetFieldMappingEditData = handleGetFieldMappingEditData;
+exports.handleUpdateFieldMappings = handleUpdateFieldMappings;
+exports.handleGetLeaveAttendanceDetails = handleGetLeaveAttendanceDetails;
+exports.handleTriggerLeaveAttendanceSync = handleTriggerLeaveAttendanceSync;
+exports.handleGetLeaveSettings = handleGetLeaveSettings;
+exports.handleGetLeaveAttendanceSyncSummary = handleGetLeaveAttendanceSyncSummary;
+exports.handleListLeaveAttendanceSyncErrors = handleListLeaveAttendanceSyncErrors;
+exports.handleGetAttendanceSettings = handleGetAttendanceSettings;
+exports.handleGetEmployeeAttendance = handleGetEmployeeAttendance;
+exports.handleListRegularizations = handleListRegularizations;
 const config_js_1 = require("../config.js");
 const zoho_client_js_1 = require("../zoho-client.js");
 function text(content) {
@@ -326,6 +336,64 @@ async function handleGetFieldMappings(args) {
     const entity = args.entity ?? "employee";
     const data = await client.getFieldMappings(entity);
     return json(data);
+}
+// ── get_people_field_mapping_edit_data ────────────────────────────────────────
+async function handleGetFieldMappingEditData(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const entity = args.entity ?? "employee";
+    const data = await client.getFieldMappingEditData(entity);
+    return json(data);
+}
+// ── update_people_employee_field_mappings ─────────────────────────────────────
+async function handleUpdateFieldMappings(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const fields = args.fields;
+    if (!Array.isArray(fields) || fields.length === 0) {
+        return text("fields array is required and must not be empty.");
+    }
+    const data = await client.updateEmployeeFieldMappings(fields);
+    return json(data);
+}
+// ── Leave & Attendance handlers ───────────────────────────────────────────────
+async function handleGetLeaveAttendanceDetails() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getIntegrationDetails());
+}
+async function handleTriggerLeaveAttendanceSync() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).triggerSync());
+}
+async function handleGetLeaveSettings() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getLeaveSettings());
+}
+async function handleGetLeaveAttendanceSyncSummary() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getSyncSummary());
+}
+async function handleListLeaveAttendanceSyncErrors() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getSyncErrors());
+}
+async function handleGetAttendanceSettings() {
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getAttendanceSettings());
+}
+async function handleGetEmployeeAttendance(args) {
+    const { employee_id, period } = args;
+    if (!employee_id || !period)
+        return text("employee_id and period are required.");
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).getEmployeeAttendance(employee_id, period));
+}
+async function handleListRegularizations(args) {
+    const opts = {};
+    if (args.employee_id)
+        opts.employee_id = String(args.employee_id);
+    if (args.from_date)
+        opts.from_date = String(args.from_date);
+    if (args.to_date)
+        opts.to_date = String(args.to_date);
+    if (args.status)
+        opts.status = String(args.status);
+    if (args.page)
+        opts.page = Number(args.page);
+    return json(await new zoho_client_js_1.ZohoLeaveAttendanceClient((0, config_js_1.loadConfig)()).listRegularizations(opts));
 }
 // ── helpers ───────────────────────────────────────────────────────────────────
 function maskUrl(url) {
