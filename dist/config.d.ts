@@ -2,6 +2,8 @@ export interface ZohoConfig {
     zoho_mcp_url: string;
     enabled_apps: string[];
     connected_at: string;
+    people_org_id?: string;
+    payroll_org_id?: string;
     organization_id?: string;
     access_token?: string;
 }

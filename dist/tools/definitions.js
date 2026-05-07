@@ -3,17 +3,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.POST_CONNECT_TOOLS = exports.PRE_CONNECT_TOOLS = exports.LIST_REGULARIZATIONS_TOOL = exports.GET_EMPLOYEE_ATTENDANCE_TOOL = exports.GET_ATTENDANCE_SETTINGS_TOOL = exports.LIST_LEAVE_SYNC_ERRORS_TOOL = exports.GET_LEAVE_SYNC_SUMMARY_TOOL = exports.GET_LEAVE_SETTINGS_TOOL = exports.TRIGGER_LEAVE_ATTENDANCE_SYNC_TOOL = exports.GET_LEAVE_ATTENDANCE_DETAILS_TOOL = exports.UPDATE_FIELD_MAPPINGS_TOOL = exports.GET_FIELD_MAPPING_EDIT_DATA_TOOL = exports.GET_FIELD_MAPPINGS_TOOL = exports.UPDATE_PREFERENCES_TOOL = exports.GET_PREFERENCES_TOOL = exports.LIST_SYNC_ERRORS_TOOL = exports.GET_SYNC_HISTORY_TOOL = exports.TRIGGER_SYNC_TOOL = exports.GET_DASHBOARD_TOOL = exports.CONFIGURE_API_CREDENTIALS_TOOL = exports.GET_EMPLOYEE_TOOL = exports.LIST_EMPLOYEES_TOOL = exports.FIX_ISSUES_TOOL = exports.SYNC_ALL_TOOL = exports.SYNC_EMPLOYEE_TOOL = exports.HEALTH_TOOL = exports.STATUS_TOOL = exports.DISCONNECT_TOOL = exports.CONNECT_TOOL = void 0;
 exports.CONNECT_TOOL = {
     name: "connect_zoho",
-    description: "Connect to Zoho via the single Zoho MCP URL. " +
-        "Steps: go to https://www.zoho.com/mcp → sign in → copy your MCP URL → " +
-        "enable Zoho Payroll and Zoho People in the Apps/Tools section → paste the URL here. " +
+    description: "Connect to Zoho. REQUIRED inputs: (1) Zoho MCP URL, (2) Zoho People organization ID, (3) Zoho Payroll organization ID. " +
+        "The agent MUST ask the user for all three values before calling this tool — do not reuse cached values silently. " +
+        "Get the MCP URL from https://www.zoho.com/mcp (sign in → enable Zoho Payroll and Zoho People → copy URL). " +
         "This must be done before any other tool is available.",
     inputSchema: {
         type: "object",
-        required: ["zoho_mcp_url"],
+        required: ["zoho_mcp_url", "people_org_id", "payroll_org_id"],
         properties: {
             zoho_mcp_url: {
                 type: "string",
-                description: "Your Zoho MCP URL from https://www.zoho.com/mcp (single URL covering all enabled apps)",
+                description: "Your Zoho MCP URL from https://www.zoho.com/mcp (single URL covering all enabled apps).",
+            },
+            people_org_id: {
+                type: "string",
+                description: "Your Zoho People organization ID. Ask the user — do not guess or reuse silently.",
+            },
+            payroll_org_id: {
+                type: "string",
+                description: "Your Zoho Payroll organization ID. Ask the user — do not guess or reuse silently.",
             },
         },
     },

@@ -37,7 +37,7 @@ function json(data) {
 }
 // ── connect_zoho ──────────────────────────────────────────────────────────────
 async function handleConnect(args) {
-    const { zoho_mcp_url } = args;
+    const { zoho_mcp_url, people_org_id, payroll_org_id } = args;
     if (!zoho_mcp_url?.startsWith("http")) {
         return text("Invalid URL. Please provide a full https:// URL.\n\n" +
             "How to get it:\n" +
@@ -45,6 +45,13 @@ async function handleConnect(args) {
             "  2. Sign in with your Zoho account\n" +
             "  3. Enable Zoho Payroll and Zoho People in the Apps/Tools section\n" +
             "  4. Copy the single MCP URL shown on the page");
+    }
+    if (!people_org_id || !payroll_org_id) {
+        return text("Missing required organization IDs.\n\n" +
+            "Before connecting, please provide:\n" +
+            "  • people_org_id  — your Zoho People organization ID\n" +
+            "  • payroll_org_id — your Zoho Payroll organization ID\n\n" +
+            "Ask the user for these values — do not guess or reuse cached IDs.");
     }
     const { ok, apps } = await (0, zoho_client_js_1.validateMcpUrl)(zoho_mcp_url);
     if (!ok) {
@@ -71,6 +78,9 @@ async function handleConnect(args) {
         zoho_mcp_url,
         enabled_apps: apps,
         connected_at: new Date().toISOString(),
+        people_org_id,
+        payroll_org_id,
+        organization_id: payroll_org_id, // legacy alias used by REST clients
     };
     (0, config_js_1.saveConfig)(config);
     return text("Connected!\n\n" +

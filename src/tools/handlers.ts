@@ -13,7 +13,7 @@ function json(data: unknown): CallToolResult {
 // ── connect_zoho ──────────────────────────────────────────────────────────────
 
 export async function handleConnect(args: Record<string, string>): Promise<CallToolResult> {
-  const { zoho_mcp_url } = args;
+  const { zoho_mcp_url, people_org_id, payroll_org_id } = args;
 
   if (!zoho_mcp_url?.startsWith("http")) {
     return text(
@@ -23,6 +23,16 @@ export async function handleConnect(args: Record<string, string>): Promise<CallT
       "  2. Sign in with your Zoho account\n" +
       "  3. Enable Zoho Payroll and Zoho People in the Apps/Tools section\n" +
       "  4. Copy the single MCP URL shown on the page"
+    );
+  }
+
+  if (!people_org_id || !payroll_org_id) {
+    return text(
+      "Missing required organization IDs.\n\n" +
+      "Before connecting, please provide:\n" +
+      "  • people_org_id  — your Zoho People organization ID\n" +
+      "  • payroll_org_id — your Zoho Payroll organization ID\n\n" +
+      "Ask the user for these values — do not guess or reuse cached IDs."
     );
   }
 
@@ -57,6 +67,9 @@ export async function handleConnect(args: Record<string, string>): Promise<CallT
     zoho_mcp_url,
     enabled_apps: apps,
     connected_at: new Date().toISOString(),
+    people_org_id,
+    payroll_org_id,
+    organization_id: payroll_org_id, // legacy alias used by REST clients
   };
   saveConfig(config);
 
