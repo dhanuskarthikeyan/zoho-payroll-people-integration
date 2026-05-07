@@ -40,3 +40,17 @@ export declare class ZohoPeopleClient {
     getSalary(id: string): Promise<SalaryDetails | null>;
     updateEmployee(id: string, updates: Partial<Employee>): Promise<SyncResult>;
 }
+export declare class ZohoPeopleIntegrationClient {
+    private orgId;
+    private token;
+    constructor(config: ZohoConfig);
+    private get headers();
+    private params;
+    getDashboard(): Promise<unknown>;
+    triggerSync(): Promise<unknown>;
+    getSyncHistory(): Promise<unknown>;
+    listSyncErrors(): Promise<unknown>;
+    getPreferences(): Promise<unknown>;
+    updatePreferences(body: Record<string, unknown>): Promise<unknown>;
+    getFieldMappings(entity?: string): Promise<unknown>;
+}

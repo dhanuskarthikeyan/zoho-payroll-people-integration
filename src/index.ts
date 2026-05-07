@@ -18,6 +18,14 @@ import {
   handleFixIssues,
   handleListEmployees,
   handleGetEmployee,
+  handleConfigureApiCredentials,
+  handleGetDashboard,
+  handleTriggerSync,
+  handleGetSyncHistory,
+  handleListSyncErrors,
+  handleGetPreferences,
+  handleUpdatePreferences,
+  handleGetFieldMappings,
 } from "./tools/handlers.js";
 
 const server = new Server(
@@ -58,12 +66,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   try {
-    if (name === "check_integration_health") return await handleHealthCheck();
-    if (name === "sync_employee")            return await handleSyncEmployee(a);
-    if (name === "sync_all_employees")       return await handleSyncAll();
-    if (name === "fix_sync_issues")          return await handleFixIssues(a);
-    if (name === "list_employees")           return await handleListEmployees(a);
-    if (name === "get_employee_details")     return await handleGetEmployee(a);
+    if (name === "check_integration_health")          return await handleHealthCheck();
+    if (name === "sync_employee")                     return await handleSyncEmployee(a);
+    if (name === "sync_all_employees")                return await handleSyncAll();
+    if (name === "fix_sync_issues")                   return await handleFixIssues(a);
+    if (name === "list_employees")                    return await handleListEmployees(a);
+    if (name === "get_employee_details")              return await handleGetEmployee(a);
+    if (name === "configure_people_api_credentials")  return handleConfigureApiCredentials(a);
+    if (name === "get_people_integration_dashboard")  return await handleGetDashboard();
+    if (name === "trigger_people_sync")               return await handleTriggerSync();
+    if (name === "get_people_sync_history")           return await handleGetSyncHistory();
+    if (name === "list_people_sync_errors")           return await handleListSyncErrors();
+    if (name === "get_people_integration_preferences") return await handleGetPreferences();
+    if (name === "update_people_integration_preferences") return await handleUpdatePreferences(args as Record<string, unknown>);
+    if (name === "get_people_field_mappings")         return await handleGetFieldMappings(a);
 
     return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
   } catch (err: unknown) {

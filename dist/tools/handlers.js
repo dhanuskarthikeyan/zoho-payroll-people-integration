@@ -9,6 +9,14 @@ exports.handleSyncAll = handleSyncAll;
 exports.handleFixIssues = handleFixIssues;
 exports.handleListEmployees = handleListEmployees;
 exports.handleGetEmployee = handleGetEmployee;
+exports.handleConfigureApiCredentials = handleConfigureApiCredentials;
+exports.handleGetDashboard = handleGetDashboard;
+exports.handleTriggerSync = handleTriggerSync;
+exports.handleGetSyncHistory = handleGetSyncHistory;
+exports.handleListSyncErrors = handleListSyncErrors;
+exports.handleGetPreferences = handleGetPreferences;
+exports.handleUpdatePreferences = handleUpdatePreferences;
+exports.handleGetFieldMappings = handleGetFieldMappings;
 const config_js_1 = require("../config.js");
 const zoho_client_js_1 = require("../zoho-client.js");
 function text(content) {
@@ -237,6 +245,87 @@ async function handleGetEmployee(args) {
         payroll: { profile: payrollEmp, salary: payrollSalary },
         in_sync: JSON.stringify(peopleEmp) === JSON.stringify(payrollEmp),
     });
+}
+// ── configure_people_api_credentials ─────────────────────────────────────────
+function handleConfigureApiCredentials(args) {
+    const { organization_id, access_token } = args;
+    const config = (0, config_js_1.loadConfig)();
+    if (!config) {
+        return text("Not connected. Run connect_zoho first.");
+    }
+    const updated = { ...config, organization_id, access_token };
+    (0, config_js_1.saveConfig)(updated);
+    return text("People Integration API credentials saved.\n\n" +
+        `✓ Organization ID: ${organization_id}\n` +
+        "✓ Access token:    saved (masked)\n\n" +
+        "You can now use:\n" +
+        "  • get_people_integration_dashboard\n" +
+        "  • trigger_people_sync\n" +
+        "  • get_people_sync_history\n" +
+        "  • list_people_sync_errors\n" +
+        "  • get_people_integration_preferences\n" +
+        "  • update_people_integration_preferences\n" +
+        "  • get_people_field_mappings");
+}
+// ── get_people_integration_dashboard ─────────────────────────────────────────
+async function handleGetDashboard() {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const data = await client.getDashboard();
+    return json(data);
+}
+// ── trigger_people_sync ───────────────────────────────────────────────────────
+async function handleTriggerSync() {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const data = await client.triggerSync();
+    return json(data);
+}
+// ── get_people_sync_history ───────────────────────────────────────────────────
+async function handleGetSyncHistory() {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const data = await client.getSyncHistory();
+    return json(data);
+}
+// ── list_people_sync_errors ───────────────────────────────────────────────────
+async function handleListSyncErrors() {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const data = await client.listSyncErrors();
+    return json(data);
+}
+// ── get_people_integration_preferences ───────────────────────────────────────
+async function handleGetPreferences() {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const data = await client.getPreferences();
+    return json(data);
+}
+// ── update_people_integration_preferences ────────────────────────────────────
+async function handleUpdatePreferences(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const body = {
+        is_allow_non_users: args.is_allow_non_users,
+        is_allow_portal_access: args.is_allow_portal_access,
+    };
+    if (args.employee_types)
+        body.employee_types = args.employee_types;
+    if (args.contractor_types)
+        body.contractor_types = args.contractor_types;
+    if (args.work_locations)
+        body.work_locations = args.work_locations;
+    const data = await client.updatePreferences(body);
+    return json(data);
+}
+// ── get_people_field_mappings ─────────────────────────────────────────────────
+async function handleGetFieldMappings(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const entity = args.entity ?? "employee";
+    const data = await client.getFieldMappings(entity);
+    return json(data);
 }
 // ── helpers ───────────────────────────────────────────────────────────────────
 function maskUrl(url) {

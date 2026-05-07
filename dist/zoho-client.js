@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ZohoPeopleClient = exports.ZohoPayrollClient = void 0;
+exports.ZohoPeopleIntegrationClient = exports.ZohoPeopleClient = exports.ZohoPayrollClient = void 0;
 exports.validateMcpUrl = validateMcpUrl;
 const axios_1 = __importDefault(require("axios"));
 // ── Single Zoho MCP client — one URL, all apps ────────────────────────────────
@@ -105,6 +105,77 @@ class ZohoPeopleClient {
     }
 }
 exports.ZohoPeopleClient = ZohoPeopleClient;
+// ── People Integration REST client ───────────────────────────────────────────
+const PAYROLL_BASE = "https://www.zohoapis.com/payroll/v1";
+class ZohoPeopleIntegrationClient {
+    orgId;
+    token;
+    constructor(config) {
+        if (!config.organization_id || !config.access_token) {
+            throw new Error("REST API credentials not configured. Run configure_people_api_credentials first.");
+        }
+        this.orgId = config.organization_id;
+        this.token = config.access_token;
+    }
+    get headers() {
+        return {
+            Authorization: `Zoho-oauthtoken ${this.token}`,
+            "Content-Type": "application/json",
+        };
+    }
+    params(extra = {}) {
+        return { organization_id: this.orgId, ...extra };
+    }
+    async getDashboard() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/people/dashboard`, {
+            headers: this.headers,
+            params: this.params(),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async triggerSync() {
+        const res = await axios_1.default.post(`${PAYROLL_BASE}/integrations/people/sync`, {}, { headers: this.headers, params: this.params({ sync_type: "manual" }), timeout: 30000 });
+        return res.data;
+    }
+    async getSyncHistory() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/sync/history`, {
+            headers: this.headers,
+            params: this.params({ app_name: "people" }),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async listSyncErrors() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/sync/errors`, {
+            headers: this.headers,
+            params: this.params({ app_name: "people" }),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async getPreferences() {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/people/preferences`, {
+            headers: this.headers,
+            params: this.params(),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async updatePreferences(body) {
+        const res = await axios_1.default.put(`${PAYROLL_BASE}/integrations/people/preferences`, body, { headers: this.headers, params: this.params(), timeout: 15000 });
+        return res.data;
+    }
+    async getFieldMappings(entity = "employee") {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/people/fields`, {
+            headers: this.headers,
+            params: this.params({ entity }),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+}
+exports.ZohoPeopleIntegrationClient = ZohoPeopleIntegrationClient;
 // ── Safe parsers ──────────────────────────────────────────────────────────────
 function safeJson(raw) {
     if (typeof raw === "string") {
