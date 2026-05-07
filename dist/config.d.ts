@@ -3,6 +3,7 @@ export interface ZohoConfig {
     enabled_apps: string[];
     connected_at: string;
     organization_id?: string;
+    payroll_org_name?: string;
     access_token?: string;
 }
 export declare function loadConfig(): ZohoConfig | null;

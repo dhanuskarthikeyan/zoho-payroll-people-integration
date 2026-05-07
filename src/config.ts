@@ -9,7 +9,8 @@ export interface ZohoConfig {
   zoho_mcp_url: string;          // Single Zoho MCP URL from zoho.com/mcp
   enabled_apps: string[];        // e.g. ["payroll", "people"]
   connected_at: string;
-  organization_id?: string;      // Zoho Payroll organization ID (for REST API)
+  organization_id?: string;      // Zoho Payroll organization ID (auto-discovered or configured)
+  payroll_org_name?: string;     // Human-readable Payroll org name
   access_token?: string;         // OAuth access token (for REST API)
 }
 
