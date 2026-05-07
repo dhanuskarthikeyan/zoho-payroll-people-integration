@@ -113,7 +113,7 @@ export class ZohoPayrollClient {
     this.orgId  = config.organization_id ?? null;
   }
 
-  private async getOrgId(): Promise<string> {
+  async getPayrollOrgId(): Promise<string> {
     if (this.orgId) return this.orgId;
     const raw  = await callZohoMcp(this.client, "ZohoPayroll_list_organizations");
     const data = safeJson(raw);
@@ -121,6 +121,10 @@ export class ZohoPayrollClient {
     if (!orgs.length) throw new Error("No Zoho Payroll organizations found.");
     this.orgId = String(orgs[0].organization_id ?? orgs[0].id ?? "");
     return this.orgId;
+  }
+
+  private async getOrgId(): Promise<string> {
+    return this.getPayrollOrgId();
   }
 
   async listEmployees(): Promise<Employee[]> {

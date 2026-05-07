@@ -50,6 +50,7 @@ export declare class ZohoPayrollClient {
     private client;
     private orgId;
     constructor(config: ZohoConfig);
+    getPayrollOrgId(): Promise<string>;
     private getOrgId;
     listEmployees(): Promise<Employee[]>;
     getEmployee(id: string): Promise<Employee | null>;

@@ -62,7 +62,7 @@ class ZohoPayrollClient {
         this.client = buildClient(config.zoho_mcp_url);
         this.orgId = config.organization_id ?? null;
     }
-    async getOrgId() {
+    async getPayrollOrgId() {
         if (this.orgId)
             return this.orgId;
         const raw = await callZohoMcp(this.client, "ZohoPayroll_list_organizations");
@@ -72,6 +72,9 @@ class ZohoPayrollClient {
             throw new Error("No Zoho Payroll organizations found.");
         this.orgId = String(orgs[0].organization_id ?? orgs[0].id ?? "");
         return this.orgId;
+    }
+    async getOrgId() {
+        return this.getPayrollOrgId();
     }
     async listEmployees() {
         const orgId = await this.getOrgId();

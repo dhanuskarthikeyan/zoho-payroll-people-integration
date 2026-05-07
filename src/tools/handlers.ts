@@ -60,16 +60,29 @@ export async function handleConnect(args: Record<string, string>): Promise<CallT
   };
   saveConfig(config);
 
+  // Auto-discover Payroll organization ID
+  let orgLine = "";
+  try {
+    const payroll = new ZohoPayrollClient(config);
+    const orgId   = await payroll.getPayrollOrgId();
+    const updated: ZohoConfig = { ...config, organization_id: orgId };
+    saveConfig(updated);
+    orgLine = `✓ Payroll Org ID — ${orgId} (auto-discovered)\n`;
+  } catch {
+    orgLine = "⚠️  Could not auto-discover Payroll Org ID — run check_integration_health to retry\n";
+  }
+
   return text(
     "Connected!\n\n" +
     "✓ Zoho MCP URL — saved\n" +
     "✓ Zoho Payroll — enabled\n" +
-    "✓ Zoho People  — enabled\n\n" +
-    "All integration tools are now available. Try:\n" +
-    "  • check_integration_health   — find sync gaps\n" +
-    "  • list_employees             — see both systems\n" +
-    "  • sync_all_employees         — one-shot full sync\n" +
-    "  • fix_sync_issues            — auto-fix problems"
+    "✓ Zoho People  — enabled\n" +
+    orgLine + "\n" +
+    "All integration tools are now available. Next steps:\n" +
+    "  • check_integration_health       — verify sync status\n" +
+    "  • get_people_field_mappings      — see which fields are mapped\n" +
+    "  • trigger_people_sync            — push People employees to Payroll\n" +
+    "  • list_people_sync_errors        — see any sync failures"
   );
 }
 
