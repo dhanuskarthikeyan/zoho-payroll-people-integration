@@ -139,6 +139,99 @@ export class ZohoPeopleClient {
   }
 }
 
+// ── People Integration REST client ───────────────────────────────────────────
+
+const PAYROLL_BASE = "https://www.zohoapis.com/payroll/v1";
+
+export class ZohoPeopleIntegrationClient {
+  private orgId: string;
+  private token: string;
+
+  constructor(config: ZohoConfig) {
+    if (!config.organization_id || !config.access_token) {
+      throw new Error(
+        "REST API credentials not configured. Run configure_people_api_credentials first."
+      );
+    }
+    this.orgId  = config.organization_id;
+    this.token  = config.access_token;
+  }
+
+  private get headers() {
+    return {
+      Authorization: `Zoho-oauthtoken ${this.token}`,
+      "Content-Type": "application/json",
+    };
+  }
+
+  private params(extra: Record<string, string> = {}) {
+    return { organization_id: this.orgId, ...extra };
+  }
+
+  async getDashboard(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/people/dashboard`, {
+      headers: this.headers,
+      params:  this.params(),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async triggerSync(): Promise<unknown> {
+    const res = await axios.post(
+      `${PAYROLL_BASE}/integrations/people/sync`,
+      {},
+      { headers: this.headers, params: this.params({ sync_type: "manual" }), timeout: 30000 }
+    );
+    return res.data;
+  }
+
+  async getSyncHistory(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/sync/history`, {
+      headers: this.headers,
+      params:  this.params({ app_name: "people" }),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async listSyncErrors(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/sync/errors`, {
+      headers: this.headers,
+      params:  this.params({ app_name: "people" }),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async getPreferences(): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/people/preferences`, {
+      headers: this.headers,
+      params:  this.params(),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async updatePreferences(body: Record<string, unknown>): Promise<unknown> {
+    const res = await axios.put(
+      `${PAYROLL_BASE}/integrations/people/preferences`,
+      body,
+      { headers: this.headers, params: this.params(), timeout: 15000 }
+    );
+    return res.data;
+  }
+
+  async getFieldMappings(entity: string = "employee"): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/people/fields`, {
+      headers: this.headers,
+      params:  this.params({ entity }),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+}
+
 // ── Safe parsers ──────────────────────────────────────────────────────────────
 
 function safeJson(raw: unknown): Record<string, unknown> {

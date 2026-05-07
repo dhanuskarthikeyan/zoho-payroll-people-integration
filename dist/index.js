@@ -50,6 +50,22 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
             return await (0, handlers_js_1.handleListEmployees)(a);
         if (name === "get_employee_details")
             return await (0, handlers_js_1.handleGetEmployee)(a);
+        if (name === "configure_people_api_credentials")
+            return (0, handlers_js_1.handleConfigureApiCredentials)(a);
+        if (name === "get_people_integration_dashboard")
+            return await (0, handlers_js_1.handleGetDashboard)();
+        if (name === "trigger_people_sync")
+            return await (0, handlers_js_1.handleTriggerSync)();
+        if (name === "get_people_sync_history")
+            return await (0, handlers_js_1.handleGetSyncHistory)();
+        if (name === "list_people_sync_errors")
+            return await (0, handlers_js_1.handleListSyncErrors)();
+        if (name === "get_people_integration_preferences")
+            return await (0, handlers_js_1.handleGetPreferences)();
+        if (name === "update_people_integration_preferences")
+            return await (0, handlers_js_1.handleUpdatePreferences)(args);
+        if (name === "get_people_field_mappings")
+            return await (0, handlers_js_1.handleGetFieldMappings)(a);
         return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
     }
     catch (err) {

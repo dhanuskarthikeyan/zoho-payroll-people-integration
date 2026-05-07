@@ -1,6 +1,6 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { loadConfig, saveConfig, clearConfig, ZohoConfig } from "../config.js";
-import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee } from "../zoho-client.js";
+import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee, ZohoPeopleIntegrationClient } from "../zoho-client.js";
 
 function text(content: string): CallToolResult {
   return { content: [{ type: "text", text: content }] };
@@ -297,6 +297,102 @@ export async function handleGetEmployee(args: Record<string, string>): Promise<C
     payroll: { profile: payrollEmp, salary: payrollSalary },
     in_sync: JSON.stringify(peopleEmp) === JSON.stringify(payrollEmp),
   });
+}
+
+// ── configure_people_api_credentials ─────────────────────────────────────────
+
+export function handleConfigureApiCredentials(args: Record<string, string>): CallToolResult {
+  const { organization_id, access_token } = args;
+  const config = loadConfig();
+  if (!config) {
+    return text("Not connected. Run connect_zoho first.");
+  }
+  const updated: ZohoConfig = { ...config, organization_id, access_token };
+  saveConfig(updated);
+  return text(
+    "People Integration API credentials saved.\n\n" +
+    `✓ Organization ID: ${organization_id}\n` +
+    "✓ Access token:    saved (masked)\n\n" +
+    "You can now use:\n" +
+    "  • get_people_integration_dashboard\n" +
+    "  • trigger_people_sync\n" +
+    "  • get_people_sync_history\n" +
+    "  • list_people_sync_errors\n" +
+    "  • get_people_integration_preferences\n" +
+    "  • update_people_integration_preferences\n" +
+    "  • get_people_field_mappings"
+  );
+}
+
+// ── get_people_integration_dashboard ─────────────────────────────────────────
+
+export async function handleGetDashboard(): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const data = await client.getDashboard();
+  return json(data);
+}
+
+// ── trigger_people_sync ───────────────────────────────────────────────────────
+
+export async function handleTriggerSync(): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const data = await client.triggerSync();
+  return json(data);
+}
+
+// ── get_people_sync_history ───────────────────────────────────────────────────
+
+export async function handleGetSyncHistory(): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const data = await client.getSyncHistory();
+  return json(data);
+}
+
+// ── list_people_sync_errors ───────────────────────────────────────────────────
+
+export async function handleListSyncErrors(): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const data = await client.listSyncErrors();
+  return json(data);
+}
+
+// ── get_people_integration_preferences ───────────────────────────────────────
+
+export async function handleGetPreferences(): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const data = await client.getPreferences();
+  return json(data);
+}
+
+// ── update_people_integration_preferences ────────────────────────────────────
+
+export async function handleUpdatePreferences(args: Record<string, unknown>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const body: Record<string, unknown> = {
+    is_allow_non_users:    args.is_allow_non_users,
+    is_allow_portal_access: args.is_allow_portal_access,
+  };
+  if (args.employee_types)   body.employee_types   = args.employee_types;
+  if (args.contractor_types) body.contractor_types = args.contractor_types;
+  if (args.work_locations)   body.work_locations   = args.work_locations;
+  const data = await client.updatePreferences(body);
+  return json(data);
+}
+
+// ── get_people_field_mappings ─────────────────────────────────────────────────
+
+export async function handleGetFieldMappings(args: Record<string, string>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const entity = args.entity ?? "employee";
+  const data = await client.getFieldMappings(entity);
+  return json(data);
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
