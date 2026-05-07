@@ -2,13 +2,39 @@ import axios, { AxiosInstance } from "axios";
 import { ZohoConfig } from "./config.js";
 
 export interface Employee {
+  // Basic Info
   id: string;
   name: string;
-  email: string;
-  department?: string;
-  designation?: string;
+  email: string;                    // Work Email
+  employee_number?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  gender?: string;
   date_of_joining?: string;
-  employment_status?: string;
+  designation?: string;
+  mobile_number?: string;
+  department?: string;
+  work_location?: string;
+  last_working_day?: string;        // Date of Exit
+  employment_status?: string;       // Status
+  // Personal Info
+  personal_email?: string;
+  date_of_birth?: string;
+  father_name?: string;
+  pan_number?: string;
+  personal_address_line1?: string;
+  personal_address_line2?: string;
+  personal_city?: string;
+  personal_state_code?: string;
+  personal_postal_code?: string;
+  // Payment Info (all-or-nothing)
+  payment_mode?: string;            // Cheque | Direct Deposit | Bank Transfer
+  bank_holder_name?: string;
+  bank_name?: string;
+  account_number?: string;
+  ifsc_code?: string;
+  account_type?: string;            // Savings | Current
 }
 
 export interface SalaryDetails {
@@ -230,6 +256,30 @@ export class ZohoPeopleIntegrationClient {
     });
     return res.data;
   }
+
+  async getFieldMappingEditData(entity: string = "employee"): Promise<unknown> {
+    const res = await axios.get(`${PAYROLL_BASE}/integrations/people/field`, {
+      headers: this.headers,
+      params:  this.params({ entity }),
+      timeout: 15000,
+    });
+    return res.data;
+  }
+
+  async updateEmployeeFieldMappings(fields: FieldMappingEntry[]): Promise<unknown> {
+    const res = await axios.put(
+      `${PAYROLL_BASE}/integrations/people/employee/fields`,
+      { fields },
+      { headers: this.headers, params: this.params(), timeout: 15000 }
+    );
+    return res.data;
+  }
+}
+
+export interface FieldMappingEntry {
+  payroll_field_name: string;
+  payroll_display_name: string;
+  people_field_name: string;
 }
 
 // ── Safe parsers ──────────────────────────────────────────────────────────────

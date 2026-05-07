@@ -174,6 +174,18 @@ class ZohoPeopleIntegrationClient {
         });
         return res.data;
     }
+    async getFieldMappingEditData(entity = "employee") {
+        const res = await axios_1.default.get(`${PAYROLL_BASE}/integrations/people/field`, {
+            headers: this.headers,
+            params: this.params({ entity }),
+            timeout: 15000,
+        });
+        return res.data;
+    }
+    async updateEmployeeFieldMappings(fields) {
+        const res = await axios_1.default.put(`${PAYROLL_BASE}/integrations/people/employee/fields`, { fields }, { headers: this.headers, params: this.params(), timeout: 15000 });
+        return res.data;
+    }
 }
 exports.ZohoPeopleIntegrationClient = ZohoPeopleIntegrationClient;
 // ── Safe parsers ──────────────────────────────────────────────────────────────

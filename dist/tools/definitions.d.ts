@@ -16,5 +16,7 @@ export declare const LIST_SYNC_ERRORS_TOOL: Tool;
 export declare const GET_PREFERENCES_TOOL: Tool;
 export declare const UPDATE_PREFERENCES_TOOL: Tool;
 export declare const GET_FIELD_MAPPINGS_TOOL: Tool;
+export declare const GET_FIELD_MAPPING_EDIT_DATA_TOOL: Tool;
+export declare const UPDATE_FIELD_MAPPINGS_TOOL: Tool;
 export declare const PRE_CONNECT_TOOLS: Tool[];
 export declare const POST_CONNECT_TOOLS: Tool[];

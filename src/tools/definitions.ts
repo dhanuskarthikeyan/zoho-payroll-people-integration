@@ -197,7 +197,10 @@ export const UPDATE_PREFERENCES_TOOL: Tool = {
 
 export const GET_FIELD_MAPPINGS_TOOL: Tool = {
   name: "get_people_field_mappings",
-  description: "Retrieve the current field mappings between Zoho People and Zoho Payroll for a given entity.",
+  description:
+    "Retrieve the current field mappings between Zoho People and Zoho Payroll. " +
+    "Shows which Payroll fields are mapped to People fields and which are unmapped. " +
+    "Covers Basic Info, Personal Info, and Payment Info sections.",
   inputSchema: {
     type: "object",
     properties: {
@@ -205,6 +208,59 @@ export const GET_FIELD_MAPPINGS_TOOL: Tool = {
         type: "string",
         enum: ["employee", "work_location"],
         description: "Entity to retrieve mappings for. Defaults to employee.",
+      },
+    },
+  },
+};
+
+export const GET_FIELD_MAPPING_EDIT_DATA_TOOL: Tool = {
+  name: "get_people_field_mapping_edit_data",
+  description:
+    "Retrieve the full field mapping edit page data: current mappings, all available Payroll fields (standard + custom), " +
+    "and all available Zoho People fields. Use this to discover which People fields exist to fill an unmapped Payroll field.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      entity: {
+        type: "string",
+        enum: ["employee", "work_location"],
+        description: "Entity to retrieve mapping data for. Defaults to employee.",
+      },
+    },
+  },
+};
+
+export const UPDATE_FIELD_MAPPINGS_TOOL: Tool = {
+  name: "update_people_employee_field_mappings",
+  description:
+    "Update field mappings between Zoho People and Zoho Payroll for employees. " +
+    "Use get_people_field_mapping_edit_data first to discover available People field names. " +
+    "Provide ALL fields you want mapped — this replaces existing mappings for those fields.",
+  inputSchema: {
+    type: "object",
+    required: ["fields"],
+    properties: {
+      fields: {
+        type: "array",
+        description: "List of field mappings to update.",
+        items: {
+          type: "object",
+          required: ["payroll_field_name", "payroll_display_name", "people_field_name"],
+          properties: {
+            payroll_field_name: {
+              type: "string",
+              description: "API name of the Zoho Payroll field (e.g. first_name, pan_number, account_number).",
+            },
+            payroll_display_name: {
+              type: "string",
+              description: "Display name of the Payroll field (e.g. First Name, PAN Number).",
+            },
+            people_field_name: {
+              type: "string",
+              description: "API name of the matching Zoho People field (e.g. FirstName, PANNumber).",
+            },
+          },
+        },
       },
     },
   },
@@ -232,4 +288,6 @@ export const POST_CONNECT_TOOLS: Tool[] = [
   GET_PREFERENCES_TOOL,
   UPDATE_PREFERENCES_TOOL,
   GET_FIELD_MAPPINGS_TOOL,
+  GET_FIELD_MAPPING_EDIT_DATA_TOOL,
+  UPDATE_FIELD_MAPPINGS_TOOL,
 ];

@@ -26,6 +26,8 @@ import {
   handleGetPreferences,
   handleUpdatePreferences,
   handleGetFieldMappings,
+  handleGetFieldMappingEditData,
+  handleUpdateFieldMappings,
 } from "./tools/handlers.js";
 
 const server = new Server(
@@ -79,7 +81,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (name === "list_people_sync_errors")           return await handleListSyncErrors();
     if (name === "get_people_integration_preferences") return await handleGetPreferences();
     if (name === "update_people_integration_preferences") return await handleUpdatePreferences(args as Record<string, unknown>);
-    if (name === "get_people_field_mappings")         return await handleGetFieldMappings(a);
+    if (name === "get_people_field_mappings")              return await handleGetFieldMappings(a);
+    if (name === "get_people_field_mapping_edit_data")     return await handleGetFieldMappingEditData(a);
+    if (name === "update_people_employee_field_mappings")  return await handleUpdateFieldMappings(args as Record<string, unknown>);
 
     return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
   } catch (err: unknown) {

@@ -16,3 +16,5 @@ export declare function handleListSyncErrors(): Promise<CallToolResult>;
 export declare function handleGetPreferences(): Promise<CallToolResult>;
 export declare function handleUpdatePreferences(args: Record<string, unknown>): Promise<CallToolResult>;
 export declare function handleGetFieldMappings(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleGetFieldMappingEditData(args: Record<string, string>): Promise<CallToolResult>;
+export declare function handleUpdateFieldMappings(args: Record<string, unknown>): Promise<CallToolResult>;

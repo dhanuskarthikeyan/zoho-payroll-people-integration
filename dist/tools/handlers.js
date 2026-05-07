@@ -17,6 +17,8 @@ exports.handleListSyncErrors = handleListSyncErrors;
 exports.handleGetPreferences = handleGetPreferences;
 exports.handleUpdatePreferences = handleUpdatePreferences;
 exports.handleGetFieldMappings = handleGetFieldMappings;
+exports.handleGetFieldMappingEditData = handleGetFieldMappingEditData;
+exports.handleUpdateFieldMappings = handleUpdateFieldMappings;
 const config_js_1 = require("../config.js");
 const zoho_client_js_1 = require("../zoho-client.js");
 function text(content) {
@@ -325,6 +327,25 @@ async function handleGetFieldMappings(args) {
     const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
     const entity = args.entity ?? "employee";
     const data = await client.getFieldMappings(entity);
+    return json(data);
+}
+// ── get_people_field_mapping_edit_data ────────────────────────────────────────
+async function handleGetFieldMappingEditData(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const entity = args.entity ?? "employee";
+    const data = await client.getFieldMappingEditData(entity);
+    return json(data);
+}
+// ── update_people_employee_field_mappings ─────────────────────────────────────
+async function handleUpdateFieldMappings(args) {
+    const config = (0, config_js_1.loadConfig)();
+    const client = new zoho_client_js_1.ZohoPeopleIntegrationClient(config);
+    const fields = args.fields;
+    if (!Array.isArray(fields) || fields.length === 0) {
+        return text("fields array is required and must not be empty.");
+    }
+    const data = await client.updateEmployeeFieldMappings(fields);
     return json(data);
 }
 // ── helpers ───────────────────────────────────────────────────────────────────

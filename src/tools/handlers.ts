@@ -1,6 +1,6 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { loadConfig, saveConfig, clearConfig, ZohoConfig } from "../config.js";
-import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee, ZohoPeopleIntegrationClient } from "../zoho-client.js";
+import { validateMcpUrl, ZohoPayrollClient, ZohoPeopleClient, Employee, ZohoPeopleIntegrationClient, FieldMappingEntry } from "../zoho-client.js";
 
 function text(content: string): CallToolResult {
   return { content: [{ type: "text", text: content }] };
@@ -392,6 +392,29 @@ export async function handleGetFieldMappings(args: Record<string, string>): Prom
   const client = new ZohoPeopleIntegrationClient(config);
   const entity = args.entity ?? "employee";
   const data = await client.getFieldMappings(entity);
+  return json(data);
+}
+
+// ── get_people_field_mapping_edit_data ────────────────────────────────────────
+
+export async function handleGetFieldMappingEditData(args: Record<string, string>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const entity = args.entity ?? "employee";
+  const data = await client.getFieldMappingEditData(entity);
+  return json(data);
+}
+
+// ── update_people_employee_field_mappings ─────────────────────────────────────
+
+export async function handleUpdateFieldMappings(args: Record<string, unknown>): Promise<CallToolResult> {
+  const config = loadConfig()!;
+  const client = new ZohoPeopleIntegrationClient(config);
+  const fields = args.fields as FieldMappingEntry[];
+  if (!Array.isArray(fields) || fields.length === 0) {
+    return text("fields array is required and must not be empty.");
+  }
+  const data = await client.updateEmployeeFieldMappings(fields);
   return json(data);
 }
 

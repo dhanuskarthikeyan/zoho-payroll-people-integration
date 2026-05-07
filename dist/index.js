@@ -66,6 +66,10 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
             return await (0, handlers_js_1.handleUpdatePreferences)(args);
         if (name === "get_people_field_mappings")
             return await (0, handlers_js_1.handleGetFieldMappings)(a);
+        if (name === "get_people_field_mapping_edit_data")
+            return await (0, handlers_js_1.handleGetFieldMappingEditData)(a);
+        if (name === "update_people_employee_field_mappings")
+            return await (0, handlers_js_1.handleUpdateFieldMappings)(args);
         return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
     }
     catch (err) {
